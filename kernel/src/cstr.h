@@ -7,7 +7,9 @@
 
 const char *uint_to_string(uint64_t value);
 const char *int_to_string(int64_t value);
-const char *double_to_string(double value, uint8_t decimal_places);
+const char *double_to_string_precise(double value, uint8_t decimal_places);
+const char *double_to_string(double value);
+const char *hex_to_string(uint64_t value);
 
 
 #endif

@@ -12,7 +12,7 @@ void _start(Framebuffer *framebuffer, PSF1_FONT *psf1_font) {
     __renderer_set_cursor(&renderer, 15, 0);
     
     for(int i = 0; i < 20; i++) { 
-        print_DIRECT(&renderer, int_to_string((int64_t)-123456));
+        print_DIRECT(&renderer, hex_to_string((uint64_t)0x1234));
         __renderer_set_cursor(&renderer, 15, (i + 1) * 16);
     }
 

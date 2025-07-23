@@ -1,0 +1,16 @@
+[
+  {
+    "arguments": [
+      "/usr/bin/gcc",
+      "-ffreestanding",
+      "-fshort-wchar",
+      "-c",
+      "-o",
+      "lib/kernel.o",
+      "src/kernel.c"
+    ],
+    "directory": "/home/jmm1205/projects/osdev/babyStepskernel/kernel",
+    "file": "/home/jmm1205/projects/osdev/babyStepskernel/kernel/src/kernel.c",
+    "output": "/home/jmm1205/projects/osdev/babyStepskernel/kernel/lib/kernel.o"
+  }
+]

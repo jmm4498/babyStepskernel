@@ -1,10 +1,11 @@
 #include "direct_io.h"
+#include "kernel_lib.h"
 /** Low level print functions */
 
 /** Prints a character directly to the screen with a renderer's given font  */
 void putchar_DIRECT(Renderer *renderer, unsigned int color, char chr, unsigned int xoffset, unsigned int yoffset) {
 
-    unsigned int *pixel = (unsigned int*)renderer->framebuffer->base_address;
+    unsigned int *pixel = (unsigned int*)renderer->framebuffer->back_buffer;
     unsigned char *fontptr = renderer->psf1_font->glyph_buffer + (chr * renderer->psf1_font->psf1_header->charsize);
 
     for(unsigned long y = yoffset; y < yoffset + 16; y++) {
@@ -15,6 +16,8 @@ void putchar_DIRECT(Renderer *renderer, unsigned int color, char chr, unsigned i
         }
         fontptr++;
     }
+
+    __memcpy(renderer->framebuffer->back_buffer, renderer->framebuffer->base_address, renderer->framebuffer->buffer_size);
 
     return;
 }

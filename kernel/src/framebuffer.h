@@ -6,6 +6,7 @@
 typedef struct {
 
 	void *base_address;
+  void *back_buffer;
 	size_t buffer_size;
 	unsigned int width;
 	unsigned int height;

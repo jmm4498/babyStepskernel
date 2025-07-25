@@ -8,10 +8,10 @@
 
 typedef struct {
     unsigned int color;
-    Framebuffer *framebuffer;
+    Framebuffer *framebuffer; //points to the actual framebuffer in memory
     PSF1_FONT *psf1_font; //might get rid of this reference
     Point point;
-} Renderer;
+} Renderer; 
 
 void __renderer_init(Renderer *renderer, Framebuffer *framebuffer, PSF1_FONT *psf1_font, unsigned int color);
 

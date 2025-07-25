@@ -11,6 +11,7 @@ typedef unsigned long long size_t;
 typedef struct {
 
 	void *base_address;
+  void *back_buffer;
 	size_t buffer_size;
 	unsigned int width;
 	unsigned int height;
@@ -79,7 +80,7 @@ PSF1_FONT *load_psf1_font(EFI_FILE *Directory, CHAR16 *Path, EFI_HANDLE ImageHan
 Framebuffer frame_buffer;
 
 
-Framebuffer  *initialize_gop() {
+Framebuffer  *initialize_gop(EFI_SYSTEM_TABLE *SystemTable) {
 
 	EFI_GUID gopGuid = EFI_GRAPHICS_OUTPUT_PROTOCOL_GUID;
 	EFI_GRAPHICS_OUTPUT_PROTOCOL *gop;
@@ -100,6 +101,10 @@ Framebuffer  *initialize_gop() {
 	frame_buffer.width = gop->Mode->Info->HorizontalResolution;
 	frame_buffer.height = gop->Mode->Info->VerticalResolution;
 	frame_buffer.pixels_per_sl = gop->Mode->Info->PixelsPerScanLine;
+
+  //allocate memory for backbuffer 
+  SystemTable->BootServices->AllocatePool(EfiLoaderData, gop->Mode->FrameBufferSize, (void**)&frame_buffer.back_buffer);
+  SystemTable->BootServices->SetMem(frame_buffer.back_buffer, frame_buffer.buffer_size, 0x00);
 
 	return &frame_buffer;
 }
@@ -214,7 +219,7 @@ EFI_STATUS efi_main (EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable) {
 
 	Print(L"Kernel is loaded\n\r");
 
-	Framebuffer *new_buffer = initialize_gop(); //graphics output protocol
+	Framebuffer *new_buffer = initialize_gop(SystemTable); //graphics output protocol
 
 	void (*KernelStart)(Framebuffer*, PSF1_FONT*) = ((__attribute__((sysv_abi)) void (*)(Framebuffer*, PSF1_FONT*) ) header.e_entry);
 

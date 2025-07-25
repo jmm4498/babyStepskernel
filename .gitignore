@@ -2,3 +2,6 @@
 *.efi
 *.img
 kernel/bin/*
+gnu-efi/x86_64/lib/
+kernel/.cache/
+kernel/lib/*.o

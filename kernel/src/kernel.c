@@ -1,40 +1,34 @@
-#include "defs.h"
 #include "renderer.h"
-#include "direct_io.h"
+
 #include "cstr.h"
+#include "defs.h"
+#include "direct_io.h"
+#include "io.h"
 #include "kernel_lib.h"
 
 void _start(Framebuffer *framebuffer, PSF1_FONT *psf1_font) {
 
-    Renderer renderer;
+  serial_init();
 
-    __renderer_init(&renderer, framebuffer, psf1_font, OS_COLOR_STD);
+  serial_print("Kernel started\n");
 
-    __renderer_set_cursor(&renderer, 45, 0);
+  __renderer_init(&__gRenderer, framebuffer, psf1_font, OS_COLOR_STD);
 
-    const char *test = "Hello World!\n";
-    char buf[64] = { '\0' };
+  __renderer_set_cursor(&__gRenderer, 45, 0);
 
-    if(__memcpy((void*)test, buf, 13) != SUCCESS) {
-      print_DIRECT(&renderer, "__memcpy() failed in kernel!\n");
-    }
+  const char *test = "Hello World!\n";
 
-    buf[13] = '\0';
+  print_DIRECT(&__gRenderer, test);
 
-    print_DIRECT(&renderer, test);
-    print_DIRECT(&renderer, buf);
+  char safe[32];
+  __memcpy("Hello from stack!\n", safe, 19);
+  safe[19] = '\0';
 
-    //for(int i = 0; i < 20; i++) { 
-    //    print_DIRECT(&renderer, hex_to_string((uint64_t)0x1234));
-    //    __renderer_set_cursor(&renderer, 15, (i + 1) * 16);
-    //}
+  print_DIRECT(&__gRenderer, safe);
 
-  
+  kprintf(safe);
 
-    //print_DIRECT(&renderer, uint_to_string((uint64_t)123456));
-    //print_DIRECT(&renderer, int_to_string((int64_t)-123456));
+  print_DIRECT(&__gRenderer, safe);
 
-    
-
-    return;
+  return;
 }

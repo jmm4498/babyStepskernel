@@ -7,8 +7,17 @@ LDS = kernel.ld
 CC = gcc
 LD = ld
 
-CFLAGS = -ffreestanding -fshort-wchar
-LDFLAGS = -T $(LDS) -static -Bsymbolic -nostdlib -fstack-protector -shared
+
+GCC_INCLUDE_PATH := $(shell $(CC) -print-file-name=include)
+
+CFLAGS = -ffreestanding -fshort-wchar -mno-red-zone -m64 -mcmodel=kernel \
+         -I $(GCC_INCLUDE_PATH) \
+	 -Wall -Wextra -Wno-unused-parameter \
+         -nostdinc -nostdlib -fno-stack-protector -fno-exceptions \
+         -fno-builtin -fno-common \
+	 -fno-pie -fno-pic -fno-PIC \
+
+LDFLAGS = -T $(LDS) -static -Bsymbolic -nostdlib 
 
 SRCDIR := src
 OBJDIR := lib
@@ -47,5 +56,13 @@ buildimg:
 	mcopy -i $(BUILDDIR)/$(OSNAME).img $(BUILDDIR)/kernel.elf ::
 	mcopy -i $(BUILDDIR)/$(OSNAME).img $(BUILDDIR)/zap-light16.psf ::
 
+
+.PHONY: rebuild clean kernel buildimg run
+clean:
+	rm -f $(OBJDIR)/*.o
+	rm -f $(BUILDDIR)/*.img
+
 run:
-	qemu-system-x86_64 -drive file=$(BUILDDIR)/$(OSNAME).img -m 256M -cpu qemu64 -drive if=pflash,format=raw,unit=0,file="$(OVMFDIR)/OVMF_CODE-pure-efi.fd",readonly=on -drive if=pflash,format=raw,unit=1,file="$(OVMFDIR)/OVMF_VARS-pure-efi.fd" -net none
+	qemu-system-x86_64 -drive file=$(BUILDDIR)/$(OSNAME).img -m 256M -cpu qemu64 -drive if=pflash,format=raw,unit=0,file="$(OVMFDIR)/OVMF_CODE-pure-efi.fd",readonly=on -drive if=pflash,format=raw,unit=1,file="$(OVMFDIR)/OVMF_VARS-pure-efi.fd" -net none -serial stdio -display none -vnc :0,password=off,lossy=on
+
+rebuild: clean kernel buildimg run

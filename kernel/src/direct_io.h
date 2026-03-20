@@ -2,11 +2,19 @@
 #ifndef H_DIR_IO
 #define H_DIR_IO
 #include "renderer.h"
+#include <stdint.h>
 
 /** Prints a character directly to the screen with a renderer's given font  */
-void putchar_DIRECT(Renderer *renderer, unsigned int color, char chr, unsigned int xoffset, unsigned int yoffset);
-
+void putchar_DIRECT(Renderer *renderer, unsigned int color, char chr,
+                    unsigned int xoffset, unsigned int yoffset);
 
 /** Prints a given string starting at a given renderer's cursor position */
 void print_DIRECT(Renderer *renderer, const char *str);
+
+/** Initializes serial port on com 1 **/
+void serial_init(void);
+
+/** Prints char *s to serial port 1. Must be initialized first **/
+void serial_print(const char *s);
+
 #endif

@@ -3,6 +3,9 @@
 #include <stdint.h>
 /** Low level print functions */
 
+
+
+
 /** Prints a character directly to the screen with a renderer's given font  */
 void putchar_DIRECT(Renderer *renderer, unsigned int color, char chr,
                     unsigned int xoffset, unsigned int yoffset) {

@@ -6,4 +6,6 @@
 
 int kprintf(const char *format, ...);
 
+int serial_printf(const char *format, ...);
+
 #endif

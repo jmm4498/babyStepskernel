@@ -4,6 +4,6 @@
 #include "direct_io.h"
 #include <stdarg.h>
 
-int kprintf(const char *format);
+int kprintf(const char *format, ...);
 
 #endif

@@ -16,19 +16,17 @@ void _start(Framebuffer *framebuffer, PSF1_FONT *psf1_font) {
 
   __renderer_set_cursor(&__gRenderer, 45, 0);
 
-  const char *test = "Hello World!\n";
+  kprintf("%s\n", "Hello from kprintf!");
+  kprintf("%d\n", 12345);
+  kprintf("%f\n", 3.14159);
 
-  print_DIRECT(&__gRenderer, test);
+  kprintf("1): %s 2): %d 3): %f 4): %x\n", "string", 67, 2.18, 0xFF);
 
-  char safe[32];
-  __memcpy("Hello from stack!\n", safe, 19);
-  safe[19] = '\0';
-
-  print_DIRECT(&__gRenderer, safe);
-
-  kprintf(safe);
-
-  print_DIRECT(&__gRenderer, safe);
+  //no op to stop before handed back to UEFI
+  print_DIRECT(&__gRenderer, "Kernel finished execution\n");
+  while(1) {
+    ;
+  }
 
   return;
 }

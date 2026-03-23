@@ -1,11 +1,14 @@
-#include "renderer.h"
 #include "cstr.h"
 #include "defs.h"
 #include "direct_io.h"
+#include "efi_types.h"
 #include "io.h"
 #include "kernel_lib.h"
+#include "renderer.h"
 
-void _start(Framebuffer *framebuffer, PSF1_FONT *psf1_font) {
+void _start(Framebuffer *framebuffer, PSF1_FONT *psf1_font,
+            EFI_MEMORY_DESCRIPTOR *map, UINTN map_size, UINTN descriptor_size,
+            UINT32 descriptor_version) {
 
   serial_init();
 
@@ -15,16 +18,31 @@ void _start(Framebuffer *framebuffer, PSF1_FONT *psf1_font) {
 
   __renderer_set_cursor(&__gRenderer, 45, 0);
 
-  kprintf("%s\n", "Hello from kprintf!");
-  kprintf("%d\n", 12345);
-  kprintf("%f\n", 3.14159);
+  UINTN entry_count = map_size / descriptor_size;
 
-  kprintf("1): %s 2): %d 3): %lf 4): %x\n", "string", 67, 2.184234, 0xFF);
-  serial_printf("1): %s 2): %d 3): %lf 4): %x\n", "string", 67, 2.184234, 0xFF);
+  serial_printf("\n\n:::Memory Map:::\n\n");
+  serial_printf("Memory Map Entries: ");
+  serial_printf("%x\n", entry_count);
 
-  //no op to stop before handed back to UEFI
-  print_DIRECT(&__gRenderer, "Kernel finished execution\n");
-  while(1) {
+  for (UINTN i = 0; i < entry_count; i++) {
+
+    EFI_MEMORY_DESCRIPTOR *desc =
+        (EFI_MEMORY_DESCRIPTOR *)(((UINT8 *)map) + (i * descriptor_size));
+
+    serial_printf("Entry %x: Type=%x, Phys=0x%x, Pages=0x%x\n", i, desc->Type,
+                  desc->PhysicalStart, desc->NumberOfPages);
+
+    // We can only uncomment this once we have some more safety on the
+    // framebuffer right now, this loop will blow through the memory and cause a
+    // CPU exception
+    // kprintf("Entry %x: Type= %x, Phys=0x%x, Pages=0x%x\n", i, desc->Type,
+    //         desc->PhysicalStart, desc->NumberOfPages);
+  }
+
+  // no op to stop before handed back to UEFI
+  kprintf("%s\n", "Kernel finished execution");
+
+  while (1) {
     ;
   }
 

@@ -1,3 +1,6 @@
+#ifndef HH_EFI_TYPES_HH
+#define HH_EFI_TYPES_HH
+
 typedef unsigned long long UINTN;
 typedef unsigned long long UINT64;
 typedef unsigned int UINT32;
@@ -13,3 +16,5 @@ typedef struct {
   UINT64 NumberOfPages;
 
 } EFI_MEMORY_DESCRIPTOR;
+
+#endif

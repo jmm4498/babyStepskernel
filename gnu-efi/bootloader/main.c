@@ -162,8 +162,8 @@ int memcmp(const void *aptr, const void *bptr, size_t n) {
 
 EFI_STATUS efi_main(EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable) {
 
+  int error = 0;
   InitializeLib(ImageHandle, SystemTable);
-
   EFI_FILE *Kernel;
 
   if ((Kernel = LoadFile(NULL, L"kernel.elf", ImageHandle, SystemTable)) ==
@@ -247,6 +247,8 @@ EFI_STATUS efi_main(EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable) {
         new_buffer->base_address, new_buffer->buffer_size, new_buffer->width,
         new_buffer->height, new_buffer->pixels_per_sl);
 
+  Print(L"Getting Memory map information...\n");
+
   EFI_STATUS status;
   UINTN map_size = 0;
   EFI_MEMORY_DESCRIPTOR *memory_map = NULL;
@@ -254,32 +256,60 @@ EFI_STATUS efi_main(EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable) {
   UINTN descriptor_size;
   UINT32 descriptor_version;
 
-  status = uefi_call_wrapper(SystemTable->BootServices->GetMemoryMap, 5,
-                             &map_size, memory_map, &map_key, &descriptor_size,
-                             &descriptor_version);
+  status =
+      uefi_call_wrapper(SystemTable->BootServices->GetMemoryMap, 5, &map_size,
+                        NULL, &map_key, &descriptor_size, &descriptor_version);
 
-  if (status != EFI_BUFFER_TOO_SMALL) {
-    Print(L"Unexpected GetMemoryMap status: %r\n\r", status);
+  if (status == EFI_BUFFER_TOO_SMALL) {
+
+    map_size += 2 * descriptor_size;
+    status = uefi_call_wrapper(SystemTable->BootServices->AllocatePool, 3,
+                               EfiLoaderData, map_size, (void **)&memory_map);
+
+    if (EFI_ERROR(status)) {
+      error = 1;
+      goto error;
+    }
+  } else if (EFI_ERROR(status)) {
+    error = 1;
+    goto error;
   }
 
-  map_size += 2 * descriptor_size;
-  status = uefi_call_wrapper(SystemTable->BootServices->AllocatePool, 3,
-                             EfiLoaderData, map_size, (void **)&memory_map);
+  do {
 
-  if (EFI_ERROR(status)) {
-    Print(L"AllocatePool failed: %r\n\r", status);
-  }
+    map_size = map_size + 2 * descriptor_size;
 
-  status = uefi_call_wrapper(SystemTable->BootServices->GetMemoryMap, 5,
-                             &map_size, memory_map, &map_key, &descriptor_size,
-                             &descriptor_version);
+    status = uefi_call_wrapper(SystemTable->BootServices->GetMemoryMap, 5,
+                               &map_size, memory_map, &map_key,
+                               &descriptor_size, &descriptor_version);
 
-  if (EFI_ERROR(status)) {
-    Print(L"GetMemoryMap failed: %r\n\r", status);
-  }
+    if (status == EFI_BUFFER_TOO_SMALL) {
+      uefi_call_wrapper(SystemTable->BootServices->FreePool, 1, memory_map);
+      status = uefi_call_wrapper(SystemTable->BootServices->AllocatePool, 3,
+                                 EfiLoaderData, map_size, (void **)&memory_map);
+
+      if (EFI_ERROR(status)) {
+        error = 1;
+        goto error;
+      }
+    }
+
+    if (EFI_ERROR(status) && status != EFI_INVALID_PARAMETER) {
+      error = 1;
+      goto error;
+    }
+
+    status = uefi_call_wrapper(SystemTable->BootServices->ExitBootServices, 2,
+                               ImageHandle, map_key);
+
+  } while (status == EFI_INVALID_PARAMETER);
 
   KernelStart(new_buffer, newfont, memory_map, map_size, descriptor_size,
               descriptor_version);
 
+error:
+  if (error != 0) {
+    return EFI_ABORTED;
+  }
   return EFI_SUCCESS; // Exit the UEFI application
 }

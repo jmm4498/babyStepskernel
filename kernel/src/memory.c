@@ -50,9 +50,10 @@ void init_physical_memory_map(EFI_MEMORY_DESCRIPTOR *map, UINTN map_size,
         (EFI_MEMORY_DESCRIPTOR *)(((UINT8 *)_map.descriptor) +
                                   (i * _map.descriptor_size));
 
-    if ((desc->Type == 7 || desc->Type == 1 || desc->Type == 2 ||
-         desc->Type == 3 || desc->Type == 4) &&
-        _map.free_range_count < 256) {
+    // if ((desc->Type == 7 || desc->Type == 1 || desc->Type == 2 ||
+    //      desc->Type == 3 || desc->Type == 4) &&
+    //     _map.free_range_count < 256) {
+    if(desc->Type == 7 && _map.free_range_count < 256) {
       add_range(desc->PhysicalStart, desc->NumberOfPages);
     }
   }
@@ -71,4 +72,9 @@ void add_range(UINT64 physical_start, UINT64 pages) {
   _map.free_range_count++;
 
   return;
+}
+
+
+void zero_page(uint64_t physical_address) {
+  __memset((void*)physical_address, 0, PAGE_SIZE);
 }

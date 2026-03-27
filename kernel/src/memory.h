@@ -1,7 +1,10 @@
 #ifndef HH_MEMORY_HH
 #define HH_MEMORY_HH
 
+#define PAGE_SIZE 4096
+
 #include "efi_types.h"
+#include "kernel_lib.h"
 
 // This stores the physical starting point of a given range of 4k pages
 typedef struct memory_range {
@@ -28,5 +31,7 @@ void init_physical_memory_map(EFI_MEMORY_DESCRIPTOR *map, UINTN map_size,
                               UINTN descriptor_size, UINT32 descriptor_version);
 
 MEMORY_MAP *get_mmap();
+
+void zero_page(uint64_t physical_address);
 
 #endif

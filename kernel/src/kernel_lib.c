@@ -67,3 +67,37 @@ int __memcpy(void *src, void *dest, size_t n) {
 
   return 0;
 }
+
+
+void *__memset(void *dest, int c, size_t n) {
+
+  uint8_t *p = (uint8_t*)dest;
+  uint64_t value = (uint8_t)c;
+
+  value |= value << 8;
+  value |= value << 16;
+  value |= value << 32;
+
+  if (n < 8) {
+    while (n--) *p++ = (uint8_t)c;
+    return dest;
+  }
+
+  while ((uintptr_t)p & 7) {
+   *p++ = (uint8_t)c;
+    n--;
+  }
+
+  uint64_t *q = (uint64_t*)p;
+  while (n >= 8) {
+    *q++ = value;
+     n -= 8;
+  }
+
+  p = (uint8_t*)q;
+  while (n--) {
+    *p++ = (uint8_t)c;
+  }
+
+  return dest;
+} 

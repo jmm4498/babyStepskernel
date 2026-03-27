@@ -6,4 +6,6 @@
 
 int __memcpy(void *src, void *dest, size_t n);
 
+void *__memset(void *dest, int c, size_t n);
+
 #endif
